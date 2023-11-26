@@ -31,4 +31,5 @@ jobs:
         touch config.env
         echo "${{ secrets.PROD_ENV_FILE }}" > config.env
     - run : npx tsc
+    - run : pm2 restart BlogeraAPI
   
