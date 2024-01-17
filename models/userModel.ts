@@ -3,8 +3,9 @@ import slugify from "slugify";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import generateRandomUsername from "../utils/randomStringGen";
 
-interface UserTypes extends mongoose.Document {
+export interface UserTypes extends mongoose.Document {
   name: string;
   email: string;
   username: string;
@@ -18,16 +19,20 @@ interface UserTypes extends mongoose.Document {
   // confirmPassword: string | undefined;
   slug: string;
   lastLogin: string;
-  passwordChangedAt: string;
-  passwordResetToken: string;
-  passwordResetEXpires: string;
+  passwordChangedAt: string | number;
+  passwordResetToken: string | undefined;
+  passwordResetExpires: string | undefined;
   isVerified: boolean;
-  verificationToken: string;
-  verificationTokenExpires: string;
+  verificationToken: string | undefined;
+  verificationTokenExpires: string | undefined;
   active: boolean;
   createVerificationToken(): string;
   createPasswordResetToken(): string;
   changePasswordAfter(timestamp: number): boolean;
+  checkPassword: (
+    inputPassword: string,
+    userPassword: string
+  ) => Promise<boolean>;
 }
 
 // // An interface that describes the properties that a User Document has
@@ -35,6 +40,7 @@ interface UserTypes extends mongoose.Document {
 //   createVerificationToken(): string;
 //   createPasswordResetToken(): string;
 //   changedPasswordAfter(timestamp: number): boolean;
+//   checkPassword(inputPassword: string, userPassword: string): boolean;
 // }
 
 // // An interface that describes the properties that a user model has
@@ -97,15 +103,13 @@ const userSchema = new mongoose.Schema<UserTypes>(
     lastLogin: Date,
     passwordChangedAt: Date,
     passwordResetToken: String,
-    passwordResetEXpires: Date,
+    passwordResetExpires: Date,
     isVerified: {
       type: Boolean,
       default: false,
     },
-
     verificationToken: String,
     verificationTokenExpires: Date,
-
     active: {
       type: Boolean,
       default: true,
@@ -118,9 +122,9 @@ const userSchema = new mongoose.Schema<UserTypes>(
     toJSON: {
       virtuals: true,
       transform(doc, ret) {
-        // DOOOOO THIIISSSSS
         ret.id = ret._id;
         delete ret._id;
+        delete ret.__v;
       },
     },
   }
@@ -128,11 +132,35 @@ const userSchema = new mongoose.Schema<UserTypes>(
 
 userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
+  // this.select("-password");
   next();
 });
 
 userSchema.pre("save", function (next) {
-  this.slug = slugify(this.name, { lower: true });
+  if (this.name) {
+    this.slug = slugify(this.name, { lower: true });
+  }
+  this.username = generateRandomUsername(
+    this.name.toLowerCase().replace(/\s/g, "_"),
+    12
+  );
+  next();
+});
+
+userSchema.pre("findOneAndUpdate", function (next) {
+  // Access the update object
+  const update: any = this.getUpdate();
+
+  if (update?.name) {
+    update.slug = slugify(update.name, { lower: true });
+  }
+
+  // Update the slug and username fields in the update object
+  if (update?.username) {
+    update.username = update.username.replace(/\s/g, "_");
+  }
+
+  // Continue with the update operation
   next();
 });
 
@@ -148,20 +176,22 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.checkPassword = async function (
   inputPassword: string,
   userPassword: string
-) {
+): Promise<boolean> {
   return await bcrypt.compare(inputPassword, userPassword);
 };
 
-userSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
+userSchema.methods.changePasswordAfter = function (
+  JWTTimestamp: number
+): boolean {
   if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.paswordChangedAt.getTime(), 10);
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime(), 10);
 
-    return JWTTimestamp > changedTimestamp / 1000;
+    return JWTTimestamp < changedTimestamp / 1000;
   }
   return false;
 };
 
-userSchema.methods.createResetPasswordToken = function () {
+userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 
   this.passwordResetToken = crypto
@@ -169,7 +199,7 @@ userSchema.methods.createResetPasswordToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  this.passwordResetEXpires = Date.now() + 10 * 60 * 1000;
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };

@@ -49,3 +49,6 @@ app.all("*", () => {
 app.use(GlobalErrorHandler);
 
 export default app;
+
+// "start": "node ./dist/index.js",
+//     "dev": "nodemon --exec ts-node ./index.ts"

@@ -23,34 +23,34 @@ const handleTokenExpError: ErrorRequestHandler = () =>
 
 const sendErrorProd: ErrorRequestHandler = (err, req, res) => {
   // API
-  if (req.originalUrl.startsWith("/api")) {
-    if (err?.isOperational === true) {
-      return res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-      });
-    } else {
-      console.log("Error: " + err);
-      return res.status(500).json({
-        status: "error",
-        message: "Something went very wrong!",
-      });
-    }
+  // if (req.originalUrl.startsWith("/api")) {
+  if (err?.isOperational === true) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+  } else {
+    console.log("Error: " + err);
+    return res.status(500).json({
+      status: "error",
+      message: "Something went very wrong!",
+    });
   }
-  // RENDERED WEBSITE
-  else {
-    if (err?.isOperational === true) {
-      return res.status(err.statusCode).render("error", {
-        title: "Something went wrong",
-        msg: err.message,
-      });
-    } else {
-      return res.status(err.statusCode).render("error", {
-        title: "Something went wrong",
-        msg: "Please try again later",
-      });
-    }
-  }
+  // }
+  // // RENDERED WEBSITE
+  // else {
+  //   if (err?.isOperational === true) {
+  //     return res.status(err.statusCode).render("error", {
+  //       title: "Something went wrong",
+  //       msg: err.message,
+  //     });
+  //   } else {
+  //     return res.status(err.statusCode).render("error", {
+  //       title: "Something went wrong",
+  //       msg: "Please try again later",
+  //     });
+  //   }
+  // }
 };
 const sendErrorDev: ErrorRequestHandler = (err, req, res) => {
   if (req.originalUrl.startsWith("/api")) {
@@ -75,7 +75,7 @@ const GlobalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   err.status = err.status || "error";
 
   if (process.env.NODE_ENV === "production") {
-    let error;
+    let error: any;
     if (err.name === "CastError")
       error = handleCastErrorDB(err, req, res, next);
     if (err.code === 11000) error = handleDuplicateValue(err, req, res, next);
@@ -85,16 +85,19 @@ const GlobalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
       error = handleJWTError(err, req, res, next);
     if (err.name === "TokenExpiredError")
       error = handleTokenExpError(err, req, res, next);
-    sendErrorProd(error, req, res, next);
+    sendErrorProd(error || err, req, res, next);
   } else if (process.env.NODE_ENV === "development") {
-    sendErrorDev(err, req, res, next);
-    let error;
-    // if (err.name === 'CastError') error = handleCastErrorDB(err);
-    // if (err.code === 11000) error = handleDuplicateValue(err);
-    // if (err.name === 'ValidationError') error = handleValidationErrors(err);
-    // if (err.name === 'JsonWebTokenError') error = handleJWTError();
-    // if (err.name === 'TokenExpiredError') error = handleTokenExpError();
-    // sendErrorProd(error, res);
+    let error: any;
+    if (err.name === "CastError")
+      error = handleCastErrorDB(err, req, res, next);
+    if (err.code === 11000) error = handleDuplicateValue(err, req, res, next);
+    if (err.name === "ValidationError")
+      error = handleValidationErrors(err, req, res, next);
+    if (err.name === "JsonWebTokenError")
+      error = handleJWTError(err, req, res, next);
+    if (err.name === "TokenExpiredError")
+      error = handleTokenExpError(err, req, res, next);
+    sendErrorDev(error || err, req, res, next);
   }
   next();
 };

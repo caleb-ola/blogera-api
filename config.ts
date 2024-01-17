@@ -11,7 +11,8 @@ interface ENV {
   NODE_ENV: string;
 
   APP_NAME: string;
-  //   APP_URL: string;
+  APP_EMAIL_FROM: string;
+  APP_URL: string;
   //   APP_SERVER_URL: string;
 
   JWT_SECRET: string;
@@ -21,6 +22,12 @@ interface ENV {
   EMAIL_PASSWORD: string;
   EMAIL_PORT: number;
   EMAIL_HOST: string;
+
+  BREVO_HOST: string;
+  BREVO_PORT: number;
+  BREVO_USERNAME: string;
+  BREVO_PASSWORD: string;
+  BREVO_KEY: string;
 }
 
 const Config = (): ENV => {
@@ -32,7 +39,8 @@ const Config = (): ENV => {
     NODE_ENV: process.env.NODE_ENV as string,
 
     APP_NAME: process.env.APP_NAME as string,
-    // APP_URL: process.env.APP_URL,
+    APP_EMAIL_FROM: process.env.APP_EMAIL_FROM as string,
+    APP_URL: process.env.APP_URL as string,
     // APP_SERVER_URL: process.env.APP_SERVER_URL,
 
     JWT_SECRET: process.env.JWT_SECRET as string,
@@ -42,6 +50,12 @@ const Config = (): ENV => {
     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD as string,
     EMAIL_PORT: +(process.env.EMAIL_PORT as string),
     EMAIL_HOST: process.env.EMAIL_HOST as string,
+
+    BREVO_HOST: process.env.BREVO_HOST as string,
+    BREVO_PORT: +(process.env.BREVO_PORT as string),
+    BREVO_USERNAME: process.env.BREVO_USERNAME as string,
+    BREVO_PASSWORD: process.env.BREVO_PASSWORD as string,
+    BREVO_KEY: process.env.BREVO_KEY as string,
   };
 };
 
