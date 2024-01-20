@@ -8,6 +8,7 @@ import AppError from "../utils/appError";
 import Email from "../utils/email";
 import crypto from "crypto";
 import { compare } from "bcryptjs";
+import generateRandomUsername from "../utils/randomStringGen";
 
 interface CustomRequest extends Request {
   currentUser?: any;
@@ -60,6 +61,10 @@ export const signUp: RequestHandler = AsyncHandler(async (req, res, next) => {
     password,
     confirmPassword,
     role: "user",
+    username: generateRandomUsername(
+      name.toLowerCase().replace(/\s/g, "_"),
+      12
+    ),
   });
 
   // Generate verification token

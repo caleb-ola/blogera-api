@@ -76,7 +76,10 @@ export const getUserByUsername: RequestHandler = AsyncHandler(
   async (req, res, next) => {
     const { username } = req.params;
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).populate(
+      "favorites",
+      "title"
+    );
     if (!user) throw new AppError("Username not found", 404);
 
     res.status(200).json({

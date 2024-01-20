@@ -25,11 +25,11 @@ export default class Email {
   newTransport() {
     // if (config.NODE_ENV === "production") {
     return nodemailer.createTransport({
-      host: "smtp-relay.sendinblue.com",
-      port: 587,
+      host: config.BREVO_HOST,
+      port: config.BREVO_PORT,
       auth: {
-        user: "olajiire2@gmail.com",
-        pass: "xsmtpsib-53297d7b1145269bac779aad26de1862a856e002245f9835a032215e5d0cc3de-c9fNprxXwydSaWK4",
+        user: config.BREVO_USERNAME,
+        pass: config.BREVO_KEY,
       },
     });
     // }

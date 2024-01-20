@@ -9,12 +9,13 @@ interface AuthorTypes extends mongoose.Document {
   id: String;
 }
 interface PostTypes extends mongoose.Document {
+  id?: any;
   title: string;
   content: string;
-  author: AuthorTypes;
+  author: { type: Schema.Types.ObjectId; ref: "User" };
   image: string;
   tags: string;
-  category: string;
+  category: { type: Schema.Types.ObjectId; ref: "Category" };
   reads: number;
   likes: Array<{ type: Schema.Types.ObjectId; ref: "User" }>;
   comments: string[];
@@ -50,12 +51,13 @@ const PostSchema = new mongoose.Schema<PostTypes>(
       required: [true, "Content is required"],
     },
     author: {
-      type: AuthorSchema,
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     image: String,
     tags: [{ type: String }],
-    category: { type: String, required: true },
+    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     reads: { type: Number, default: 0 },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
@@ -75,11 +77,11 @@ const PostSchema = new mongoose.Schema<PostTypes>(
   }
 );
 
-PostSchema.pre("save", function (next) {
-  if (this.isModified("likes") || this.isModified("reads")) return next();
-  this.PID = generateRandomPostID();
-  next();
-});
+// PostSchema.pre("save", function (next) {
+//   if (this.isModified("likes") || this.isModified("reads")) return next();
+//   this.PID = generateRandomPostID();
+//   next();
+// });
 
 const Post = mongoose.model<PostTypes>("Post", PostSchema);
 

@@ -5,6 +5,7 @@ import AppError from "../utils/appError";
 import multer from "multer";
 import sharp from "sharp";
 import mongoose, { ObjectId } from "mongoose";
+import { generateRandomPostID } from "../utils/misc";
 
 interface CustomRequest extends Request {
   currentUser?: any;
@@ -49,15 +50,10 @@ export const createBlogPost: RequestHandler = AsyncHandler(
       title,
       content,
       image,
-      author: {
-        name: currentUser.name,
-        email: currentUser.email,
-        username: currentUser.username,
-        slug: currentUser.slug,
-        id: currentUser.id,
-      },
+      author: currentUser.id,
       tags,
       category,
+      PID: generateRandomPostID(),
     });
 
     await newPost.save();
@@ -74,7 +70,10 @@ export const createBlogPost: RequestHandler = AsyncHandler(
 // Get all blog posts
 export const getAllBlogPosts: RequestHandler = AsyncHandler(
   async (req, res, next) => {
-    const allPosts = await Post.find();
+    const allPosts = await Post.find().populate(
+      "author",
+      "name email username"
+    );
 
     res.status(200).json({
       status: "success",
@@ -91,7 +90,10 @@ export const getBlogPost: RequestHandler = AsyncHandler(
   async (req, res, next) => {
     const { PID } = req.params;
 
-    const blogPost = await Post.findOne({ PID });
+    const blogPost = await Post.findOne({ PID }).populate(
+      "author",
+      "name email username"
+    );
 
     if (!blogPost) throw new AppError("Not found", 404);
 
@@ -106,9 +108,17 @@ export const getBlogPost: RequestHandler = AsyncHandler(
 
 // Update a blog post
 export const updateBlogPost: RequestHandler = AsyncHandler(
-  async (req, res, next) => {
+  async (req: CustomRequest, res, next) => {
     const { PID } = req.params;
     const { title, content, tags, category, image } = req.body;
+
+    const { currentUser } = req;
+
+    const blogPost = await Post.findOne({ PID });
+    if (!blogPost) throw new AppError("Blog post does not exist", 404);
+
+    if (currentUser.id !== blogPost.author.toString())
+      throw new AppError("You are not authorized to perform this action ", 401);
 
     const updatedBlogPost = await Post.findOneAndUpdate(
       { PID },
@@ -116,7 +126,6 @@ export const updateBlogPost: RequestHandler = AsyncHandler(
       { new: true, runValidators: true }
     );
 
-    if (!updatedBlogPost) throw new AppError("Blog post does not exist", 404);
     res.status(200).json({
       status: "success",
       data: {
@@ -136,8 +145,8 @@ export const deleteBlogPost: RequestHandler = AsyncHandler(
 
     if (!blogPost) throw new AppError("Blog post does not exist", 404);
 
-    if (blogPost.author.id !== currentUser.id)
-      throw new AppError("You are not authorized to perform this action.", 404);
+    if (currentUser.id !== blogPost.author.toString())
+      throw new AppError("You are not authorized to perform this action.", 401);
 
     const deleteBlogPost = await Post.findOneAndDelete({
       PID,
@@ -150,7 +159,7 @@ export const deleteBlogPost: RequestHandler = AsyncHandler(
   }
 );
 
-// Like and Dislike a post
+// Toggle like post
 export const ToggleLikePost: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
     const { PID } = req.params;
@@ -165,9 +174,18 @@ export const ToggleLikePost: RequestHandler = AsyncHandler(
     if (isLiked === -1) {
       blogPost.likes.push(currentUser.id);
       await blogPost.save();
+
+      currentUser.favorites.push(blogPost.id);
+      await currentUser.save();
     } else {
       blogPost.likes.splice(isLiked, 1);
-      blogPost.save();
+      await blogPost.save();
+
+      currentUser.favorites.splice(
+        currentUser.favorites.indexOf(blogPost.id),
+        1
+      );
+      await currentUser.save();
     }
 
     res.status(200).json({
@@ -179,30 +197,12 @@ export const ToggleLikePost: RequestHandler = AsyncHandler(
   }
 );
 
-// export const ToggleLikePost: RequestHandler = AsyncHandler(
-//   async (req: CustomRequest, res, next) => {
-//     const { PID } = req.params;
-//     const { currentUser } = req;
-
-//     const blogPost = await Post.findOne({ PID });
-//     if (!blogPost) throw new AppError("Post not found", 404);
-
-//     // blogPost.likes.pull(currentUser.id);
-
-//     res.status(200).json({
-//       status: "success",
-//       data: {},
-//     });
-//   }
-// );
-
 // Get posts by author
-
 export const getBlogPostsByAuthor: RequestHandler = AsyncHandler(
   async (req, res, next) => {
-    const { username } = req.params;
+    const { author_id } = req.params;
 
-    const blogPosts = await Post.find({ "author.username": username });
+    const blogPosts = await Post.find({ author: author_id });
     if (!blogPosts) throw new AppError("User not found", 404);
 
     res.status(200).json({
@@ -215,6 +215,21 @@ export const getBlogPostsByAuthor: RequestHandler = AsyncHandler(
 );
 
 // Get posts by category
+export const getBlogPostsByCategory: RequestHandler = AsyncHandler(
+  async (req, res, next) => {
+    const { category_id } = req.params;
+
+    const blogPost = await Post.findOne({ category: category_id });
+    if (!blogPost) throw new AppError("Blog post not found", 404);
+
+    res.status(200).json({
+      status: "succcess",
+      data: {
+        data: blogPost,
+      },
+    });
+  }
+);
 
 // Mark post as viewed/read
 export const AddRead: RequestHandler = AsyncHandler(async (req, res, next) => {

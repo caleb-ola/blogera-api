@@ -1,9 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import slugify from "slugify";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import generateRandomUsername from "../utils/randomStringGen";
+
+interface PostTypes extends mongoose.Document {
+  title: string;
+  content: string;
+  image: string;
+  tags: string;
+  category: { type: Schema.Types.ObjectId; ref: "Category" };
+  reads: number;
+  likes: Array<{ type: Schema.Types.ObjectId; ref: "User" }>;
+  comments: string[];
+  PID: string;
+}
 
 export interface UserTypes extends mongoose.Document {
   name: string;
@@ -16,6 +28,8 @@ export interface UserTypes extends mongoose.Document {
   role: string;
   gender: string;
   password: string;
+  favorites: string[];
+  posts: Array<{ type: Schema.Types.ObjectId; ref: "Post" }>;
   // confirmPassword: string | undefined;
   slug: string;
   lastLogin: string;
@@ -48,6 +62,37 @@ export interface UserTypes extends mongoose.Document {
 //   build(attrs: UserTypes): UserDoc;
 // }
 
+const PostSchema = new mongoose.Schema<PostTypes>(
+  {
+    title: {
+      type: String,
+      required: [true, "Title is required"],
+    },
+    content: {
+      type: String,
+      required: [true, "Content is required"],
+    },
+    image: String,
+    tags: [{ type: String }],
+    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    reads: { type: Number, default: 0 },
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    PID: String,
+  },
+  {
+    timestamps: true,
+    toObject: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+      },
+    },
+  }
+);
 const userSchema = new mongoose.Schema<UserTypes>(
   {
     name: {
@@ -99,6 +144,8 @@ const userSchema = new mongoose.Schema<UserTypes>(
     //     message: "Passwords must be the same",
     //   },
     // },
+    favorites: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     slug: String,
     lastLogin: Date,
     passwordChangedAt: Date,
@@ -140,10 +187,10 @@ userSchema.pre("save", function (next) {
   if (this.name) {
     this.slug = slugify(this.name, { lower: true });
   }
-  this.username = generateRandomUsername(
-    this.name.toLowerCase().replace(/\s/g, "_"),
-    12
-  );
+  // this.username = generateRandomUsername(
+  //   this.name.toLowerCase().replace(/\s/g, "_"),
+  //   12
+  // );
   next();
 });
 
@@ -165,7 +212,12 @@ userSchema.pre("findOneAndUpdate", function (next) {
 });
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (
+    !this.isModified("password") ||
+    this.isModified("favorites") ||
+    this.isModified("posts")
+  )
+    return next();
 
   this.password = await bcrypt.hash(this.password, 12);
   // this.confirmPassword = undefined;
