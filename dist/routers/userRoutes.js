@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const userController_1 = require("../controllers/userController");
+const protect_1 = __importDefault(require("../middlewares/protect"));
+const retrictTo_1 = __importDefault(require("../middlewares/retrictTo"));
+const router = (0, express_1.Router)();
+router.get("/", userController_1.getAllUsers);
+router.get("/user", userController_1.getUserByEmail);
+router.get("/current-user", protect_1.default, userController_1.getCurrentUser);
+router.get("/:id", userController_1.getUser);
+router.get("/username/:username", userController_1.getUserByUsername);
+router.patch("/update-profile", protect_1.default, userController_1.updateProfile);
+router.delete("/delete-current-user", protect_1.default, userController_1.deactivateCurrentUser);
+router.patch("/deactivate-user/:email", protect_1.default, (0, retrictTo_1.default)("admin"), userController_1.deactivateUser);
+router.delete("/delete-user/:email", protect_1.default, (0, retrictTo_1.default)("admin"), userController_1.deleteUser);
+exports.default = router;

@@ -32,7 +32,8 @@ const Config = () => {
         PORT: +process.env.PORT,
         NODE_ENV: process.env.NODE_ENV,
         APP_NAME: process.env.APP_NAME,
-        // APP_URL: process.env.APP_URL,
+        APP_EMAIL_FROM: process.env.APP_EMAIL_FROM,
+        APP_URL: process.env.APP_URL,
         // APP_SERVER_URL: process.env.APP_SERVER_URL,
         JWT_SECRET: process.env.JWT_SECRET,
         JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
@@ -40,6 +41,11 @@ const Config = () => {
         EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
         EMAIL_PORT: +process.env.EMAIL_PORT,
         EMAIL_HOST: process.env.EMAIL_HOST,
+        BREVO_HOST: process.env.BREVO_HOST,
+        BREVO_PORT: +process.env.BREVO_PORT,
+        BREVO_USERNAME: process.env.BREVO_USERNAME,
+        BREVO_PASSWORD: process.env.BREVO_PASSWORD,
+        BREVO_KEY: process.env.BREVO_KEY,
     };
 };
 const sanitizeConfig = (config) => {

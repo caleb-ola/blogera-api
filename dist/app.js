@@ -22,14 +22,15 @@ const app = (0, express_1.default)();
 if (process.env.NODE_ENV === "development") {
     app.use((0, morgan_1.default)("dev"));
 }
+app.set("trust proxy", 1);
 const limiter = (0, express_rate_limit_1.default)({
-    windowMs: 60 * 60 * 1000, // 1 hour
+    windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     message: "Too many request from this IP, please try again later",
 });
-app.use(limiter); // Rate limiting for IpP address
+app.use(limiter); // Rate limiting for IPP address
 app.use((0, cors_1.default)());
 app.use((0, hpp_1.default)()); // Prevent parameter pollution (duplicate query strings)
 // app.use(xss()); // Data sanitation against xss
@@ -44,3 +45,5 @@ app.all("*", () => {
 });
 app.use(errorController_1.default);
 exports.default = app;
+// "start": "node ./dist/index.js",
+//     "dev": "nodemon --exec ts-node ./index.ts"
