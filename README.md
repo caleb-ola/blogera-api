@@ -43,7 +43,7 @@ The Blogera API is built on a robust tech stack, leveraging modern technologies 
 
 ## Getting Started
 
-To begin using the Blogera API, refer to our comprehensive [API Documentation](https://documenter.getpostman.com/view/12146558/2s9YC5yCER) for detailed information on endpoints, request and response formats, and authentication procedures.
+To begin using the Blogera API, refer to our comprehensive [API Documentation](https://documenter.getpostman.com/view/12146558/2s9YysCM8w) for detailed information on endpoints, request and response formats, and authentication procedures.
 Feel free to explore the possibilities with Blogera API and enhance your applications with powerful blogging features!
 
 #### Prerequisites
@@ -65,7 +65,7 @@ To ensure the security of user data and protected endpoints, the Blogera API use
 
 ## API Documentation
 
-For detailed information on how to use the API, please refer to the [API Documentation](https://documenter.getpostman.com/view/12146558/2s9YC5yCER).
+For detailed information on how to use the API, please refer to the [API Documentation](https://documenter.getpostman.com/view/12146558/2s9YysCM8w).
 
 ## Contributing
 
