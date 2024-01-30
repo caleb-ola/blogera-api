@@ -25,6 +25,7 @@ The Blogera API is designed to streamline the development of applications relate
 
 Authentication: Signin, Signup, verify email, resend email verification, reset password.
 User Management: Create user accounts, update profiles, and retrieve user information.
+Email Notifications: Getting email notifications after performing certain processes.
 Blog Post Operations: Create, update, retrieve, and delete blog posts. Interact with likes and other engagement features.
 Comments feature: Create, Update, retrieve and delete individual blog post comments.
 Category Management: Organize blog posts by categories, providing a structured and user-friendly browsing experience.
