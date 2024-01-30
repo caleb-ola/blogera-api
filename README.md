@@ -21,13 +21,15 @@ Welcome to the documentation for the Blogera API. This API allows you to manage 
 
 The Blogera API is designed to streamline the development of applications related to blogging, content creation, and online communities. It allows developers to integrate robust blogging features into their applications, facilitating the creation and management of engaging content.
 
-#### Key Features:
+### Key Features:
 
+Authentication: Signin, Signup, verify email, resend email verification, reset password.
 User Management: Create user accounts, update profiles, and retrieve user information.
 Blog Post Operations: Create, update, retrieve, and delete blog posts. Interact with likes and other engagement features.
+Comments feature: Create, Update, retrieve and delete individual blog post comments.
 Category Management: Organize blog posts by categories, providing a structured and user-friendly browsing experience.
 
-#### Technologies Used:
+### Technologies Used:
 
 The Blogera API is built on a robust tech stack, leveraging modern technologies to provide a seamless and efficient blogging experience. Here's a glimpse of the technologies used in the development of the Blogera API:
 
@@ -46,12 +48,12 @@ The Blogera API is built on a robust tech stack, leveraging modern technologies 
 To begin using the Blogera API, refer to our comprehensive [API Documentation](https://documenter.getpostman.com/view/12146558/2s9YysCM8w) for detailed information on endpoints, request and response formats, and authentication procedures.
 Feel free to explore the possibilities with Blogera API and enhance your applications with powerful blogging features!
 
-#### Prerequisites
+### Prerequisites
 
 You should have Node.js installed on your local machine.
 Make sure your node.js version is 16.14.0 or higher.
 
-#### Installation
+### Installation
 
 To install the API, follow the instructions below:
 
