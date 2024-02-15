@@ -202,6 +202,8 @@ export const login: RequestHandler = AsyncHandler(async (req, res, next) => {
 
   if (!comparePasswords) throw new AppError("Email or Password incorrect", 400);
 
+  await new Email(existingUser, "").sendLoginSuccess();
+
   createSendToken(existingUser, 200, res);
 });
 

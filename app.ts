@@ -31,7 +31,7 @@ const limiter = rateLimit({
   message: "Too many request from this IP, please try again later",
 });
 
-app.use(limiter); // Rate limiting for IPP address
+app.use(limiter); // Rate limiting for IP address
 app.use(cors());
 app.use(hpp()); // Prevent parameter pollution (duplicate query strings)
 // app.use(xss()); // Data sanitation against xss
