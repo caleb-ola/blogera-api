@@ -260,7 +260,7 @@ export const resetPassword: RequestHandler = AsyncHandler(
       passwordResetToken: verifiedToken,
       passwordResetExpires: { $gt: Date.now() },
     });
-    console.log({ user });
+    // console.log({ user });
 
     if (!user)
       throw new AppError("Token invalid. Token may have expired.", 400);
