@@ -7,10 +7,15 @@ export const getAllCategories: RequestHandler = AsyncHandler(
   async (req, res, next) => {
     const categories = await Category.find();
 
+    const features = new APIFeatures(categories, req.query);
+
+    const categoryQuery = await features.query;
+
     res.status(200).json({
       status: "success",
+      results: categoryQuery.length,
       data: {
-        data: categories,
+        data: categoryQuery,
       },
     });
   }

@@ -32,11 +32,19 @@ export const getAllUsers: RequestHandler = AsyncHandler(
   async (req, res, next) => {
     const users = await User.find();
 
+    const features = new APIFeatures(users, req.query)
+      .filter()
+      .sort()
+      .paginate()
+      .limitFields();
+
+    const userQuery = await features.query;
+
     res.status(200).json({
       status: "success",
-      results: users.length,
+      results: userQuery.length,
       data: {
-        data: users,
+        data: userQuery,
       },
     });
   }
