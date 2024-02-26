@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import AsyncHandler from "../utils/asyncHandler";
 import Category from "../models/categoryModel";
 import AppError from "../utils/appError";
+import APIFeatures from "../utils/apiFeatures";
 
 export const getAllCategories: RequestHandler = AsyncHandler(
   async (req, res, next) => {

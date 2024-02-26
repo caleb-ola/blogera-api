@@ -4,7 +4,6 @@ import Post from "../models/postModel";
 import AppError from "../utils/appError";
 import multer from "multer";
 import sharp from "sharp";
-import mongoose, { ObjectId } from "mongoose";
 import { generateRandomPostID } from "../utils/misc";
 
 interface CustomRequest extends Request {

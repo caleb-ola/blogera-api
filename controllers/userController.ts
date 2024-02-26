@@ -1,7 +1,10 @@
-import { RequestHandler, Request } from "express";
+import { RequestHandler, Request, Response, NextFunction } from "express";
 import User from "../models/userModel";
 import AsyncHandler from "../utils/asyncHandler";
 import AppError from "../utils/appError";
+import multer from "multer";
+import sharp from "sharp";
+import APIFeatures from "../utils/apiFeatures";
 
 interface CustomRequest extends Request {
   currentUser?: any;
@@ -14,6 +17,48 @@ interface UpdateCurrentUserObject {
   location?: string;
   gender?: string;
 }
+
+const multerStorage = multer.memoryStorage();
+const upload = multer({ storage: multerStorage });
+
+export const uploadAvatar = upload.single("avatar");
+export const uploadBanner = upload.single("bannerImage");
+
+export const resizeUserAvatar = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  req.body.avatar = `img-avatar-${
+    req.currentUser.id
+  }-${Date.now()}-profile.jpeg`;
+  if (req.file) {
+    await sharp(req.file.buffer)
+      .resize(2000, 1333)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/images/users/avatars/${req.body.avatar}`);
+  }
+  next();
+};
+
+export const resizeUserBannerImage = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  req.body.bannerImage = `img-banner-${
+    req.currentUser.id
+  }-${Date.now()}-profile.jpeg`;
+  if (req.file) {
+    await sharp(req.file.buffer)
+      .resize(1584, 396)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/images/users/banners/${req.body.bannerImage}`);
+  }
+  next();
+};
 
 export const getCurrentUser: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
@@ -129,7 +174,7 @@ export const updateProfile: RequestHandler = AsyncHandler(
       }
     }
 
-    console.log({ updateObject });
+    // console.log({ updateObject });
 
     // Get currentUser (coming from the protect middleware)
     const { currentUser } = req;
@@ -194,6 +239,51 @@ export const deleteUser: RequestHandler = AsyncHandler(
 
     res.status(204).json({
       status: "success",
+    });
+  }
+);
+
+export const updateUserAvatar: RequestHandler = AsyncHandler(
+  async (req: CustomRequest, res, next) => {
+    const { avatar } = req.body;
+    if (!avatar) throw new AppError("Avatar is required!", 400);
+
+    const { currentUser } = req;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      currentUser.id,
+      { avatar },
+      { new: true }
+    );
+    if (!updatedUser) throw new AppError("User not found!", 400);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        data: updatedUser,
+      },
+    });
+  }
+);
+
+export const updateUserBanner: RequestHandler = AsyncHandler(
+  async (req: CustomRequest, res, next) => {
+    const { bannerImage } = req.body;
+    if (!bannerImage) throw new AppError("Banner image is required", 400);
+
+    const { currentUser } = req;
+
+    const updatedUser = await User.findById(
+      currentUser.id,
+      { bannerImage },
+      { new: true }
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        data: updatedUser,
+      },
     });
   }
 );
