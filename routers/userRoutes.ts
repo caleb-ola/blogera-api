@@ -8,7 +8,13 @@ import {
   getUser,
   getUserByEmail,
   getUserByUsername,
+  resizeUserAvatar,
+  resizeUserBannerImage,
   updateProfile,
+  updateUserAvatar,
+  updateUserBanner,
+  uploadAvatar,
+  uploadBanner,
 } from "../controllers/userController";
 import protect from "../middlewares/protect";
 import restrictTo from "../middlewares/retrictTo";
@@ -21,6 +27,20 @@ router.get("/current-user", protect, getCurrentUser);
 router.get("/:id", getUser);
 router.get("/username/:username", getUserByUsername);
 router.patch("/update-profile", protect, updateProfile);
+router.patch(
+  "/update-user-avatar",
+  protect,
+  uploadAvatar,
+  resizeUserAvatar,
+  updateUserAvatar
+);
+router.patch(
+  "/update-banner-image",
+  protect,
+  uploadBanner,
+  resizeUserBannerImage,
+  updateUserBanner
+);
 router.delete("/delete-current-user", protect, deactivateCurrentUser);
 router.patch(
   "/deactivate-user/:email",
