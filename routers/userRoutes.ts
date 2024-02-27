@@ -8,7 +8,6 @@ import {
   getUser,
   getUserByEmail,
   getUserByUsername,
-  resizeUserAvatar,
   resizeUserBannerImage,
   updateProfile,
   updateUserAvatar,
@@ -18,6 +17,7 @@ import {
 } from "../controllers/userController";
 import protect from "../middlewares/protect";
 import restrictTo from "../middlewares/retrictTo";
+import { resizeUserAvatar, uploadImage } from "../services/fileUpload";
 
 const router = Router();
 
@@ -30,7 +30,7 @@ router.patch("/update-profile", protect, updateProfile);
 router.patch(
   "/update-user-avatar",
   protect,
-  uploadAvatar,
+  uploadImage,
   resizeUserAvatar,
   updateUserAvatar
 );

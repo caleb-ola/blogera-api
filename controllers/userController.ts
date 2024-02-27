@@ -5,6 +5,9 @@ import AppError from "../utils/appError";
 import multer from "multer";
 import sharp from "sharp";
 import APIFeatures from "../utils/apiFeatures";
+import config from "../config";
+import AWS from "aws-sdk";
+import { s3UploadV2 } from "../services/s3CloudStorage";
 
 interface CustomRequest extends Request {
   currentUser?: any;
@@ -18,29 +21,38 @@ interface UpdateCurrentUserObject {
   gender?: string;
 }
 
+// setting up multer storage
 const multerStorage = multer.memoryStorage();
 const upload = multer({ storage: multerStorage });
+
+// SEtting up AWS s3 instance
+const s3: any = new AWS.S3({
+  accessKeyId: config.BUCKET_ACCESS,
+  secretAccessKey: config.BUCKET_SECRET,
+  region: config.BUCKET_REGION,
+});
 
 export const uploadAvatar = upload.single("avatar");
 export const uploadBanner = upload.single("bannerImage");
 
-export const resizeUserAvatar = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  req.body.avatar = `img-avatar-${
-    req.currentUser.id
-  }-${Date.now()}-profile.jpeg`;
-  if (req.file) {
-    await sharp(req.file.buffer)
-      .resize(2000, 1333)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`public/images/users/avatars/${req.body.avatar}`);
-  }
-  next();
-};
+// export const resizeUserAvatar = async (
+//   req: CustomRequest,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   req.body.avatar = `img-avatar-${
+//     req.currentUser.id
+//   }-${Date.now()}-profile.jpeg`;
+//   if (req.file) {
+//     // console.log(req.file);
+//     await sharp(req.file.buffer)
+//       .resize(2000, 1333)
+//       .toFormat("jpeg")
+//       .jpeg({ quality: 90 })
+//       .toFile(`public/images/users/avatars/${req.body.avatar}`);
+//   }
+//   next();
+// };
 
 export const resizeUserBannerImage = async (
   req: CustomRequest,
@@ -245,14 +257,16 @@ export const deleteUser: RequestHandler = AsyncHandler(
 
 export const updateUserAvatar: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
-    const { avatar } = req.body;
-    if (!avatar) throw new AppError("Avatar is required!", 400);
+    // const { image } = req.body;
+    // if (!image) throw new AppError("Avatar is required!", 400);
 
     const { currentUser } = req;
 
+    const result = await s3UploadV2(req, "avatars");
+
     const updatedUser = await User.findByIdAndUpdate(
       currentUser.id,
-      { avatar },
+      { avatar: result.Location },
       { new: true }
     );
     if (!updatedUser) throw new AppError("User not found!", 400);
@@ -273,7 +287,7 @@ export const updateUserBanner: RequestHandler = AsyncHandler(
 
     const { currentUser } = req;
 
-    const updatedUser = await User.findById(
+    const updatedUser = await User.findByIdAndUpdate(
       currentUser.id,
       { bannerImage },
       { new: true }
