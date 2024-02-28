@@ -257,8 +257,8 @@ export const deleteUser: RequestHandler = AsyncHandler(
 
 export const updateUserAvatar: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
-    // const { image } = req.body;
-    // if (!image) throw new AppError("Avatar is required!", 400);
+    const { image } = req.body;
+    if (!image) throw new AppError("Avatar is required!", 400);
 
     const { currentUser } = req;
 
