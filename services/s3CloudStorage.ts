@@ -1,6 +1,9 @@
 import { S3 } from "aws-sdk";
 import config from "../config";
-import { createUniqueFileName } from "../utils/recurrents";
+import {
+  createUniqueFileName,
+  extractFileNameFromUrl,
+} from "../utils/recurrents";
 import AppError from "../utils/appError";
 
 const awsS3 = new S3({
@@ -10,7 +13,12 @@ const awsS3 = new S3({
 });
 
 // Uploading to S3 using the aws-sdk version 2
-export const s3UploadV2 = async (req: any, imgType: string) => {
+export const s3UploadV2 = async (
+  req: any,
+  imgType: string,
+  fileName: string
+) => {
+  // Get extension of file to be uploaded
   const ext = req.file.mimetype.split("/")[1];
 
   //  Create unique name for file
@@ -24,10 +32,14 @@ export const s3UploadV2 = async (req: any, imgType: string) => {
   // Specify file path
   const pathName = `${imgType}/${uniqueName}`;
 
+  // Extract exisiting name if it exists and specify it's path
+  const existingName = fileName && extractFileNameFromUrl(fileName);
+  const existingPathName = fileName && `${imgType}/${existingName}`;
+
   // Setting up params
   const params = {
     Bucket: config.BUCKET_NAME,
-    Key: pathName,
+    Key: existingPathName || pathName,
     Body: req.file?.buffer,
     contentType: req.file?.mimetype,
   };
@@ -38,6 +50,20 @@ export const s3UploadV2 = async (req: any, imgType: string) => {
   try {
     const result = await awsS3.upload(params).promise();
     return result;
+  } catch (err: any) {
+    throw new AppError(err.message, 400);
+  }
+};
+
+// Deleting from S3 bucket
+export const s3DeleteV2 = async (fileName: string) => {
+  const params = {
+    Bucket: config.BUCKET_NAME,
+    Key: fileName,
+  };
+
+  try {
+    await awsS3.deleteObject(params).promise();
   } catch (err: any) {
     throw new AppError(err.message, 400);
   }

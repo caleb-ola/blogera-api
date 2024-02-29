@@ -8,16 +8,17 @@ import {
   getUser,
   getUserByEmail,
   getUserByUsername,
-  resizeUserBannerImage,
   updateProfile,
   updateUserAvatar,
   updateUserBanner,
-  uploadAvatar,
-  uploadBanner,
 } from "../controllers/userController";
 import protect from "../middlewares/protect";
 import restrictTo from "../middlewares/retrictTo";
-import { resizeUserAvatar, uploadImage } from "../services/fileUpload";
+import {
+  resizeUserAvatar,
+  resizeUserBanner,
+  uploadImage,
+} from "../services/fileUpload";
 
 const router = Router();
 
@@ -37,8 +38,8 @@ router.patch(
 router.patch(
   "/update-banner-image",
   protect,
-  uploadBanner,
-  resizeUserBannerImage,
+  uploadImage,
+  resizeUserBanner,
   updateUserBanner
 );
 router.delete("/delete-current-user", protect, deactivateCurrentUser);

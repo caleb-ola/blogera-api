@@ -19,3 +19,19 @@ export const createUniqueFileName = (
   )}-${Date.now()}.${ext}`;
   return avatarName;
 };
+
+export const extractFileNameFromUrl = (url: string) => {
+  // Split the url into an array
+  const urlParts = url.split("/");
+
+  // Get the filename from the url
+  const fileName = urlParts[urlParts.length - 1];
+
+  // Remove addtional query parameters and suffixes
+  const removedFileNameQueries = fileName.split("?")[0];
+
+  // Remove addtional suffixes
+  // const removedFileNameSuffixes = fileName.split("-")[0];
+
+  return removedFileNameQueries;
+};

@@ -7,7 +7,8 @@ import sharp from "sharp";
 import APIFeatures from "../utils/apiFeatures";
 import config from "../config";
 import AWS from "aws-sdk";
-import { s3UploadV2 } from "../services/s3CloudStorage";
+import { s3DeleteV2, s3UploadV2 } from "../services/s3CloudStorage";
+import { extractFileNameFromUrl } from "../utils/recurrents";
 
 interface CustomRequest extends Request {
   currentUser?: any;
@@ -54,23 +55,23 @@ export const uploadBanner = upload.single("bannerImage");
 //   next();
 // };
 
-export const resizeUserBannerImage = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  req.body.bannerImage = `img-banner-${
-    req.currentUser.id
-  }-${Date.now()}-profile.jpeg`;
-  if (req.file) {
-    await sharp(req.file.buffer)
-      .resize(1584, 396)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`public/images/users/banners/${req.body.bannerImage}`);
-  }
-  next();
-};
+// export const resizeUserBannerImage = async (
+//   req: CustomRequest,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   req.body.bannerImage = `img-banner-${
+//     req.currentUser.id
+//   }-${Date.now()}-profile.jpeg`;
+//   if (req.file) {
+//     await sharp(req.file.buffer)
+//       .resize(1584, 396)
+//       .toFormat("jpeg")
+//       .jpeg({ quality: 90 })
+//       .toFile(`public/images/users/banners/${req.body.bannerImage}`);
+//   }
+//   next();
+// };
 
 export const getCurrentUser: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
@@ -257,12 +258,21 @@ export const deleteUser: RequestHandler = AsyncHandler(
 
 export const updateUserAvatar: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
-    const { image } = req.body;
-    if (!image) throw new AppError("Avatar is required!", 400);
+    // const { image } = req.body;
+    // if (!image) throw new AppError("Avatar is required!", 400);
 
     const { currentUser } = req;
+    if (!currentUser) throw new AppError("You are not logged in", 400);
 
-    const result = await s3UploadV2(req, "avatars");
+    // if (currentUser.avatar) {
+    //   const fileName = extractFileNameFromUrl(currentUser.avatar);
+    //   console.log(fileName);
+    //   const deleteUpload = await s3DeleteV2(fileName);
+    //   console.log(deleteUpload);
+    // }
+
+    const result = await s3UploadV2(req, "avatars", currentUser?.avatar);
+    // console.log({ result });
 
     const updatedUser = await User.findByIdAndUpdate(
       currentUser.id,
@@ -282,14 +292,17 @@ export const updateUserAvatar: RequestHandler = AsyncHandler(
 
 export const updateUserBanner: RequestHandler = AsyncHandler(
   async (req: CustomRequest, res, next) => {
-    const { bannerImage } = req.body;
-    if (!bannerImage) throw new AppError("Banner image is required", 400);
+    // const { bannerImage } = req.body;
+    // if (!bannerImage) throw new AppError("Banner image is required", 400);
 
     const { currentUser } = req;
+    if (!currentUser) throw new AppError("You are not logged in", 400);
+
+    const result = await s3UploadV2(req, "banners", currentUser?.bannerImage);
 
     const updatedUser = await User.findByIdAndUpdate(
       currentUser.id,
-      { bannerImage },
+      { bannerImage: result.Location },
       { new: true }
     );
 

@@ -40,3 +40,15 @@ export const resizeUserAvatar = (
   }
   next();
 };
+
+// Resizing the user's banner image
+export const resizeUserBanner = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.file) {
+    sharp(req.file.buffer).resize(1584, 396);
+  }
+  next();
+};
