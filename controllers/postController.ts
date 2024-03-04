@@ -5,33 +5,35 @@ import AppError from "../utils/appError";
 import multer from "multer";
 import sharp from "sharp";
 import { generateRandomPostID } from "../utils/misc";
+import aws from "aws-sdk";
+import { s3UploadV2 } from "../services/s3CloudStorage";
 
 interface CustomRequest extends Request {
   currentUser?: any;
 }
 
 // Handle Image upoloads
-const multerStorage = multer.memoryStorage();
-const upload = multer({ storage: multerStorage });
+// const multerStorage = multer.memoryStorage();
+// const upload = multer({ storage: multerStorage });
 
-export const uploadPostImage = upload.single("image");
+// export const uploadPostImage = upload.single("image");
 
-export const resizePostImage: RequestHandler = async (
-  req: CustomRequest,
-  res,
-  Next
-) => {
-  req.body.image = `img-blog-${req.currentUser.id}-${Date.now()}-post.jpeg`;
+// export const resizePostImage: RequestHandler = async (
+//   req: CustomRequest,
+//   res,
+//   Next
+// ) => {
+//   req.body.image = `img-blog-${req.currentUser.id}-${Date.now()}-post.jpeg`;
 
-  if (req.file) {
-    await sharp(req.file.buffer)
-      .resize(2000, 1333)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`public/images/posts/${req.body.image}`);
-  }
-  Next();
-};
+//   if (req.file) {
+//     await sharp(req.file.buffer)
+//       .resize(2000, 1333)
+//       .toFormat("jpeg")
+//       .jpeg({ quality: 90 })
+//       .toFile(`public/images/posts/${req.body.image}`);
+//   }
+//   Next();
+// };
 
 // Create a blog post
 export const createBlogPost: RequestHandler = AsyncHandler(
@@ -45,10 +47,12 @@ export const createBlogPost: RequestHandler = AsyncHandler(
         401
       );
 
+    const result = await s3UploadV2(req, "posts", undefined);
+
     const newPost = new Post({
       title,
       content,
-      image,
+      image: result.Location,
       author: currentUser.id,
       tags,
       category,
@@ -113,10 +117,8 @@ export const updateBlogPost: RequestHandler = AsyncHandler(
 
     const { currentUser } = req;
 
-    const blogPost = await Post.findOne({ PID });
-    if (!blogPost) throw new AppError("Blog post does not exist", 404);
-
-    if (currentUser.id !== blogPost.author.toString())
+    const blogPost = await Post.findOne({ PID, author: currentUser.id });
+    if (!blogPost)
       throw new AppError("You are not authorized to perform this action ", 401);
 
     const updatedBlogPost = await Post.findOneAndUpdate(

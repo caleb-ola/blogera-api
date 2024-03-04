@@ -7,9 +7,8 @@ import {
   getBlogPost,
   getBlogPostsByAuthor,
   AddRead,
-  resizePostImage,
   updateBlogPost,
-  uploadPostImage,
+  // uploadPostImage,
   getBlogPostsByCategory,
 } from "../controllers/postController";
 import protect from "../middlewares/protect";
@@ -20,18 +19,19 @@ import {
   getComment,
   updateComment,
 } from "../controllers/commentController";
+import { resizePostImage, uploadImage } from "../services/fileUpload";
 
 const router = Router();
 
 router
   .route("/")
   .get(getAllBlogPosts)
-  .post(protect, uploadPostImage, resizePostImage, createBlogPost);
+  .post(protect, uploadImage, resizePostImage, createBlogPost);
 
 router
   .route("/:PID")
   .get(getBlogPost)
-  .patch(protect, uploadPostImage, resizePostImage, updateBlogPost)
+  .patch(protect, uploadImage, resizePostImage, updateBlogPost)
   .delete(protect, deleteBlogPost);
 router.get("/:author_id/author", getBlogPostsByAuthor);
 router.get("/:category_id/category", getBlogPostsByCategory);

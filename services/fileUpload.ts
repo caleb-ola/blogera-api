@@ -52,3 +52,15 @@ export const resizeUserBanner = (
   }
   next();
 };
+
+// Resize post image
+export const resizePostImage = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.file) {
+    sharp(req.file.buffer).resize(2000, 1333);
+  }
+  next();
+};

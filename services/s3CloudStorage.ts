@@ -16,7 +16,7 @@ const awsS3 = new S3({
 export const s3UploadV2 = async (
   req: any,
   imgType: string,
-  fileName: string
+  fileName: string | undefined
 ) => {
   // Get extension of file to be uploaded
   const ext = req.file.mimetype.split("/")[1];
