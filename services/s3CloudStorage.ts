@@ -1,10 +1,8 @@
 import { S3 } from "aws-sdk";
 import config from "../config";
-import {
-  createUniqueFileName,
-  extractFileNameFromUrl,
-} from "../utils/recurrents";
+import { createUniqueFileName, extractFileNameFromUrl } from "../utils/casuals";
 import AppError from "../utils/appError";
+require("aws-sdk/lib/maintenance_mode_message").suppress = true;
 
 const awsS3 = new S3({
   accessKeyId: config.BUCKET_ACCESS,

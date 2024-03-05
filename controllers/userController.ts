@@ -8,7 +8,7 @@ import APIFeatures from "../utils/apiFeatures";
 import config from "../config";
 import AWS from "aws-sdk";
 import { s3DeleteV2, s3UploadV2 } from "../services/s3CloudStorage";
-import { extractFileNameFromUrl } from "../utils/recurrents";
+import { extractFileNameFromUrl } from "../utils/casuals";
 
 interface CustomRequest extends Request {
   currentUser?: any;
